@@ -62,6 +62,7 @@ def main():
     img_width = config['img_width']
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(torch.cuda.device_count())
     print(f'device: {device}')
 
     predict_dataset = Synth90kDataset(paths=images,
@@ -77,10 +78,11 @@ def main():
                 map_to_seq_hidden=config['map_to_seq_hidden'],
                 rnn_hidden=config['rnn_hidden'],
                 leaky_relu=config['leaky_relu'])
-    crnn.load_state_dict(torch.load(reload_checkpoint, map_location=device))
-    crnn.to(device)
+    crnn.load_state_dict(torch.load(reload_checkpoint))
+    crnn_para = torch.nn.DataParallel(crnn, devices_ids=[0,1,2,3,4,5,6,7])
+    crnn_para.cuda()
 
-    preds = predict(crnn, predict_loader, Synth90kDataset.LABEL2CHAR,
+    preds = predict(crnn_para, predict_loader, Synth90kDataset.LABEL2CHAR,
                     decode_method=decode_method,
                     beam_size=beam_size)
 

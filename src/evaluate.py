@@ -32,6 +32,7 @@ def evaluate(crnn, dataloader, criterion,
             images, targets, target_lengths = [d.to(device) for d in data]
 
             logits = crnn(images)
+            logits = logits.permute(1, 0, 2) # TODO: check me
             log_probs = torch.nn.functional.log_softmax(logits, dim=2)
 
             batch_size = images.size(0)
@@ -92,12 +93,14 @@ def main():
                 rnn_hidden=config['rnn_hidden'],
                 leaky_relu=config['leaky_relu'])
     crnn.load_state_dict(torch.load(reload_checkpoint, map_location=device))
-    crnn.to(device)
+    crnn_para = torch.nn.DataParallel(crnn)
+    crnn_para.cuda()
+    # crnn.to(device)
 
     criterion = CTCLoss(reduction='sum')
     criterion.to(device)
 
-    evaluation = evaluate(crnn, test_loader, criterion,
+    evaluation = evaluate(crnn_para, test_loader, criterion,
                           decode_method=config['decode_method'],
                           beam_size=config['beam_size'])
     print('test_evaluation: loss={loss}, acc={acc}'.format(**evaluation))

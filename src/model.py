@@ -85,6 +85,7 @@ class CRNN(nn.Module):
 
         recurrent, _ = self.rnn1(seq)
         recurrent, _ = self.rnn2(recurrent)
+        recurrent = recurrent.permute(1, 0, 2) # TODO: check me
 
         output = self.dense(recurrent)
         return output  # shape: (seq_len, batch, num_class)

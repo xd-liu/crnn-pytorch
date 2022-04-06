@@ -26,8 +26,8 @@ train_config = {
 train_config.update(common_config)
 
 evaluate_config = {
-    'eval_batch_size': 512,
-    'cpu_workers': 4,
+    'eval_batch_size': 512 * 8 * 8,
+    'cpu_workers': 8,
     'reload_checkpoint': 'checkpoints/crnn_synth90k.pt',
     'decode_method': 'beam_search',
     'beam_size': 10,
